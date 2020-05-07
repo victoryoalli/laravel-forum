@@ -43,7 +43,9 @@ class PostController
             break;
         }
         $post->save();
-
+        if ($request->back_url != null) {
+            return redirect()->to($request->back_url);
+        }
         return back()->with('laravel-forum-status', __('laravel-forum::words.record_updated'));
     }
 
@@ -97,6 +99,10 @@ class PostController
         }
         $discussion->save();
 
+        if ($request->back_url != null) {
+            return redirect()->to($request->back_url);
+        }
+
         if ('discussion' === $redirectTo) {
             return redirect()->route('discussions.show', ['discussion' => $discussion->slug])->with('laravel-forum-status', __('laravel-forum::words.record_created'));
         }
@@ -127,6 +133,10 @@ class PostController
         $post->save();
         $discussion = $post->discussion;
 
+        if ($request->back_url != null) {
+            return redirect()->to($request->back_url);
+        }
+
         if ('discussion' === $redirectTo) {
             return redirect()->route('discussions.show', ['discussion' => $discussion->slug])->with('laravel-forum-status', __('laravel-forum::words.record_updated'));
         }
@@ -149,6 +159,10 @@ class PostController
         $post->delete();
         $discussion->comment_count = ($discussion->comment_count - 1);
         $discussion->save();
+
+        if ($request->back_url != null) {
+            return redirect()->to($request->back_url);
+        }
 
         if ('discussion' === $redirectTo) {
             return redirect()->route('discussions.show', ['discussion' => $discussion->slug])->with('laravel-forum-status', __('laravel-forum::words.record_destroyed'));
