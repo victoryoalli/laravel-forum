@@ -6,6 +6,9 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 // If discussion has not defined directly, we can find it
 // with slug var.
+if(!Auth::check()){
+    return;
+}
 if (!isset($back_url)) {
     $back_url = null;
 }
@@ -60,32 +63,32 @@ $discussionUser->last_read_post_number = $discussion->post_number_index;
 $discussionUser->save();
 ?>
 <div class="">
-    <div class="mt-2 flex">
+    <div class="flex mt-2">
         <div>
-            <h1 class="capitalize text-primary-600 text-lg hidden">{{$discussion->title}}</h1>
+            <h1 class="hidden text-lg capitalize text-primary-600">{{$discussion->title}}</h1>
             @foreach($discussion->tags as $tag)
-            <span class="py-1 px-2 rounded-full" style="color:{{$tag->color}};background-color:{{$tag->background_color}};">
+            <span class="px-2 py-1 rounded-full" style="color:{{$tag->color}};background-color:{{$tag->background_color}};">
                 {{$tag->name}}
             </span>
             @endforeach
         </div>
     </div>
     @if (session('laravel-forum-status'))
-    <div class="bg-green-500 text-white px-6 py-2 rounded">
+    <div class="px-6 py-2 text-white bg-green-500 rounded">
         {{ session('laravel-forum-status') }}
     </div>
     @endif
     @forelse($posts as $post)
     <div class="flex items-start md:mx-4">
-        <div class="w-16 hidden md:block">
-            <div class="bg-primary-500 font-semibold inline-block mt-3 mx-auto p-3 rounded-full text-white" avatar="{{$post->user->name}}"></div>
+        <div class="hidden w-16 md:block">
+            <div class="inline-block p-3 mx-auto mt-3 font-semibold text-white rounded-full bg-primary-500" avatar="{{$post->user->name}}"></div>
         </div>
-        <div class="bg-gray-100 mt-3 p-3 rounded w-full" id="post-content-{{$post->id}}">
+        <div class="w-full p-3 mt-3 bg-gray-100 rounded" id="post-content-{{$post->id}}">
             <div class="">
 
                 <div class="text-gray-700">
                     <p class="">
-                        <span class="text-primary-500 font-semibold">
+                        <span class="font-semibold text-primary-500">
                             {{ $post->user->name }}
                         </span>
                         {!! nl2br(e($post->content)) !!}
@@ -100,41 +103,41 @@ $discussionUser->save();
                 <input type="hidden" name="discussion_id" value="{{$discussion->id}}" />
                 <input type="hidden" name="back_url" value="{{$back_url}}">
                 <input type="hidden" name="from" value="discussion">
-                <textarea class="bg-gray-100 border border-gray-300 focus:outline-none focus:shadow-outline mt-4 px-3 py-2 rounded text-gray-800 w-full" name="content" id="content" value="{{old('content')}}" old="{{$post->content}}" onkeyup="canEdit({{$post->id}})" max-length="100">{{$post->content}}</textarea>
+                <textarea class="w-full px-3 py-2 mt-4 text-gray-800 bg-gray-100 border border-gray-300 rounded focus:outline-none focus:shadow-outline" name="content" id="content" value="{{old('content')}}" old="{{$post->content}}" onkeyup="canEdit({{$post->id}})" max-length="100">{{$post->content}}</textarea>
             </div>
             <div class="text-right">
-                <button class="capitalize text-gray-400 text-xs" type="button" onclick="toggleEdit({{$post->id}})">cancel</button>
-                <button class="bg-primary-500 capitalize font-semibold p-1 px-2 rounded shadow text-white text-xs" type="submit" disabled="disabled">update</button>
+                <button class="text-xs text-gray-400 capitalize" type="button" onclick="toggleEdit({{$post->id}})">cancel</button>
+                <button class="p-1 px-2 text-xs font-semibold text-white capitalize rounded shadow bg-primary-500" type="submit" disabled="disabled">update</button>
             </div>
         </form>
         @if($post->canEdit())
-        <div class="relative inline-block text-left mt-3" x-data="{dropdown:false}" @click.away="dropdown=false">
+        <div class="relative inline-block mt-3 text-left" x-data="{dropdown:false}" @click.away="dropdown=false">
             <div>
                 <button @click="dropdown=!dropdown" class="flex items-center text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600">
-                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                     </svg>
                 </button>
             </div>
 
-            <div class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg" x-show="dropdown">
-                <div class="rounded-md bg-white shadow-xs">
+            <div class="absolute right-0 z-10 w-56 mt-2 origin-top-right rounded-md shadow-lg" x-show="dropdown">
+                <div class="bg-white rounded-md shadow-xs">
                     <div class="py-1">
                         @if($post->is_approved)
                         <a class="flex items-center px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:bg-gray-100 focus:text-gray-900" href="{{route('posts.status',['post' => $post])}}?key=approve&value=0&back_url={{$back_url}}">
-                            <svg class="h-4 w-4 mr-2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
                                 <path d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                             Dissaprove
                         </a>
                         @else
                         <a class="flex items-center px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:bg-gray-100 focus:text-gray-900" href="{{route('posts.status',['post' => $post])}}?key=approve&value=1&back_url={{$back_url}}">
-                            <i class="fas fa-check pr-3"></i> Approve
+                            <i class="pr-3 fas fa-check"></i> Approve
                         </a>
                         @endif
                         @if($post->hidden_at)
                         <a class="flex items-center px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:bg-gray-100 focus:text-gray-900" href="{{route('posts.status',['post' => $post])}}?key=hide&value=1&back_url={{$back_url}}">
-                            <svg class="h-4 w-4 mr-2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
                                 <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                             </svg>
@@ -142,14 +145,14 @@ $discussionUser->save();
                         </a>
                         @else
                         <a class="flex items-center px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:bg-gray-100 focus:text-gray-900" href="{{route('posts.status',['post' => $post])}}?key=hide&value=0&back_url={{$back_url}}">
-                            <svg class="h-4 w-4 mr-2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
                                 <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
                             </svg>
                             Hide
                         </a>
                         @endif
                         <a class="flex items-center px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:bg-gray-100 focus:text-gray-900" href="javascript:void(0)" onclick="event.preventDefault();toggleEdit({{$post->id}});">
-                            <svg class="h-4 w-4 mr-2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
                                 <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                             </svg>
                             Edit
@@ -176,8 +179,8 @@ $discussionUser->save();
         @endif
     </div>
     <div class="flex">
-        <div class="md:w-16 w-0">&nbsp;</div>
-        <small class="md:ml-4 ml-1 mt-1 text-gray-500 text-xs">
+        <div class="w-0 md:w-16">&nbsp;</div>
+        <small class="mt-1 ml-1 text-xs text-gray-500 md:ml-4">
             @if($post->edited_user_id)
             Edited at {{$post->edited_at->diffForHumans()}}
             @if ($post->edited_user_id !== $post->user_id)
@@ -189,8 +192,8 @@ $discussionUser->save();
         </small>
     </div>
     @empty
-    <div class="row py3 my-3">
-        <div class="col  text-center">
+    <div class="my-3 row py3">
+        <div class="text-center col">
             No comments yet.
             @if(!$discussion->is_locked)
             Be the first one!
@@ -199,30 +202,30 @@ $discussionUser->save();
     </div>
     @endforelse
 
-    <div class="flex justify-between items-base py-3 my-3 md:mx-4">
+    <div class="flex justify-between py-3 my-3 items-base md:mx-4">
         @if(!$discussion->is_locked)
-        <div class="mt-4 w-16 hidden md:block">
-            <div class="bg-primary-500 font-semibold inline-block p-3 rounded-full text-white" avatar="{{$discussion->user->name}}"></div>
+        <div class="hidden w-16 mt-4 md:block">
+            <div class="inline-block p-3 font-semibold text-white rounded-full bg-primary-500" avatar="{{$discussion->user->name}}"></div>
         </div>
-        <div class="mt-4 w-full">
+        <div class="w-full mt-4">
             <form action="{{route('posts.store')}}" method="POST" id="post-form">
                 @csrf
                 <div class="form-group">
                     <input type="hidden" name="discussion_id" value="{{$discussion->id}}" />
                     <input type="hidden" name="from" value="{{Route::currentRouteName()}}">
                     <input type="hidden" name="back_url" value="{{$back_url}}">
-                    <textarea placeholder="Comenta aqui" class="bg-gray-100 w-full border border-gray-200 active:outline-none focus:outline-none focus:shadow-outline-blue p-3 rounded" name="content" id="post-content" value="{{old('content')}}"></textarea>
+                    <textarea placeholder="Comenta aqui" class="w-full p-3 bg-gray-100 border border-gray-200 rounded active:outline-none focus:outline-none focus:shadow-outline-blue" name="content" id="post-content" value="{{old('content')}}"></textarea>
                     @if($errors->has('content'))
                     <p class=" text-danger">{{$errors->first('content')}}</p>
                     @endif
                 </div>
                 <div class="flex justify-end">
-                    <button class="mt-4 py-2 px-4 bg-primary-500 rounded text-white" type="submit">Send Answer</button>
+                    <button class="px-4 py-2 mt-4 text-white rounded bg-primary-500" type="submit">Send Answer</button>
                 </div>
             </form>
         </div>
         @else
-        <div class="col text-center text-gray-500">
+        <div class="text-center text-gray-500 col">
             Discussion locked by owner
         </div>
         @endif
